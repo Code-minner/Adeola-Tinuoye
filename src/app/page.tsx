@@ -247,7 +247,7 @@ export default function VAPortfolio() {
       />
 
       {/* Hero Section */}
-      <section id="home" className="min-h-screen flex items-center bg-gradient-to-br from-slate-900 via-blue-900/60 to-purple-900/80 relative overflow-hidden">
+      <section id="home" className="min-h-screen flex items-center bg-gradient-to-br from-black via-purple-900/70 to-black bg-gradient-to-br from-slate-900 via-blue-900/60 to-purple-900/80 relative overflow-hidden">
         {/* Navigation */}
         <nav className="fixed top-[1%] w-[90%] backdrop-blur-xl border-b border-purple-500/20 border-t border-blue-800/20 z-40 shadow-2xl m-auto left-[5%] rounded-full">
           <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
