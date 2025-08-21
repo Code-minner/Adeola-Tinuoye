@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Menu, X, Mail, Phone, Calendar, Star, CheckCircle, ArrowRight, 
-  Zap, Briefcase, Award, TrendingUp, Globe, Users, Clock, Target,
-  Download, ExternalLink, ChevronRight, Play, Sparkles, Heart,
+  Zap, Clock, Target, ChevronRight, Play, Sparkles,
   MessageCircle, Shield, Rocket, BarChart3
 } from 'lucide-react';
+import Image from 'next/image';
 
 interface Service {
   icon: React.ReactNode;
@@ -35,12 +35,6 @@ interface Testimonial {
   image: string;
   company: string;
   result: string;
-}
-
-interface Stat {
-  number: string;
-  label: string;
-  icon: React.ReactNode;
 }
 
 export default function VAPortfolio() {
@@ -152,7 +146,7 @@ export default function VAPortfolio() {
   const portfolioItems: PortfolioItem[] = [
     {
       title: "SaaS Company Revenue Transformation",
-      description: "Revolutionized a struggling SaaS startup's operations by implementing comprehensive business systems, resulting in explosive growth and successful Series A funding.",
+      description: "Revolutionized a struggling SaaS startup&apos;s operations by implementing comprehensive business systems, resulting in explosive growth and successful Series A funding.",
       metrics: "340% Revenue Growth",
       category: "Business Transformation",
       duration: "8 months",
@@ -202,7 +196,7 @@ export default function VAPortfolio() {
       name: "Marcus Thompson",
       role: "CEO",
       company: "TechFlow Innovations",
-      content: "Adeola didn't just manage my business operations—she transformed them. Her strategic thinking and flawless execution helped us scale from $500K to $3M in revenue. She's not just a VA, she's a business partner.",
+      content: "Adeola didn&apos;t just manage my business operations—she transformed them. Her strategic thinking and flawless execution helped us scale from $500K to $3M in revenue. She&apos;s not just a VA, she&apos;s a business partner.",
       rating: 5,
       image: "MT",
       result: "500% Revenue Growth"
@@ -211,7 +205,7 @@ export default function VAPortfolio() {
       name: "Sarah Chen",
       role: "Founder",
       company: "LuxeLife E-commerce",
-      content: "Working with Adeola was the best investment I've ever made. She built systems that run like clockwork and her attention to detail is unmatched. Our customer satisfaction scores increased by 40% in just 3 months.",
+      content: "Working with Adeola was the best investment I&apos;ve ever made. She built systems that run like clockwork and her attention to detail is unmatched. Our customer satisfaction scores increased by 40% in just 3 months.",
       rating: 5,
       image: "SC",
       result: "40% Higher Customer Satisfaction"
@@ -220,13 +214,12 @@ export default function VAPortfolio() {
       name: "David Rodriguez",
       role: "Managing Director",
       company: "Global Ventures Capital",
-      content: "Adeola's ability to handle complex projects while maintaining the highest standards is remarkable. She managed our portfolio company communications flawlessly during our $50M acquisition deal.",
+      content: "Adeola&apos;s ability to handle complex projects while maintaining the highest standards is remarkable. She managed our portfolio company communications flawlessly during our $50M acquisition deal.",
       rating: 5,
       image: "DR",
       result: "$50M Deal Success"
     }
   ];
-
 
   if (isLoading) {
     return (
@@ -254,77 +247,77 @@ export default function VAPortfolio() {
       />
 
       {/* Hero Section */}
-      <section id="home" className="min-h-screen flex items-center bg-gradient-to-br from-black via-purple-900/70 to-black bg-gradient-to-br from-slate-900 via-blue-900/60 to-purple-900/80 relative overflow-hidden">
-            {/* Navigation */}
-      <nav className="fixed top-[1%] w-[90%] backdrop-blur-xl border-b border-purple-500/20 border-t border-blue-800/20  z-40 shadow-2xl m-auto left-[5%] rounded-full">
-        <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
-          <div className="flex justify-between items-center h-18">
-            <div className="text-3xl font-black bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent tracking-tight">
-              ADEOLA TINUOYE
-            </div>
-            
-            {/* Desktop Navigation */}
-            <div className="hidden lg:flex space-x-10">
-              {['home', 'about', 'services', 'portfolio', 'testimonials', 'contact'].map((section) => (
-                <button
-                  key={section}
-                  onClick={() => scrollToSection(section)}
-                  className={`capitalize transition-all duration-300 font-semibold relative group ${
-                    activeSection === section 
-                      ? 'text-blue-400' 
-                      : 'text-white hover:text-blue-400'
-                  }`}
+      <section id="home" className="min-h-screen flex items-center bg-gradient-to-br from-slate-900 via-blue-900/60 to-purple-900/80 relative overflow-hidden">
+        {/* Navigation */}
+        <nav className="fixed top-[1%] w-[90%] backdrop-blur-xl border-b border-purple-500/20 border-t border-blue-800/20 z-40 shadow-2xl m-auto left-[5%] rounded-full">
+          <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
+            <div className="flex justify-between items-center h-18">
+              <div className="text-3xl font-black bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent tracking-tight">
+                ADEOLA TINUOYE
+              </div>
+              
+              {/* Desktop Navigation */}
+              <div className="hidden lg:flex space-x-10">
+                {['home', 'about', 'services', 'portfolio', 'testimonials', 'contact'].map((section) => (
+                  <button
+                    key={section}
+                    onClick={() => scrollToSection(section)}
+                    className={`capitalize transition-all duration-300 font-semibold relative group ${
+                      activeSection === section 
+                        ? 'text-blue-400' 
+                        : 'text-white hover:text-blue-400'
+                    }`}
+                  >
+                    {section}
+                    <span className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 transition-all duration-300 group-hover:w-full ${activeSection === section ? 'w-full' : ''}`}></span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="hidden lg:flex items-center space-x-4">
+                <button 
+                  onClick={() => scrollToSection('contact')}
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/25"
                 >
-                  {section}
-                  <span className={`absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 transition-all duration-300 group-hover:w-full ${activeSection === section ? 'w-full' : ''}`}></span>
+                  Let&apos;s Talk
                 </button>
-              ))}
-            </div>
+              </div>
 
-            <div className="hidden lg:flex items-center space-x-4">
-              <button 
-                onClick={() => scrollToSection('contact')}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/25"
-              >
-                Let's Talk
-              </button>
-            </div>
-
-            {/* Mobile menu button */}
-            <div className="lg:hidden">
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="text-white hover:text-blue-400 transition-colors p-2"
-              >
-                {isMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
-              </button>
+              {/* Mobile menu button */}
+              <div className="lg:hidden">
+                <button
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className="text-white hover:text-blue-400 transition-colors p-2"
+                >
+                  {isMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="lg:hidden bg-black/98 backdrop-blur-xl border-b border-purple-500/20">
-            <div className="px-6 pt-4 pb-6 space-y-3">
-              {['home', 'about', 'services', 'portfolio', 'testimonials', 'contact'].map((section) => (
-                <button
-                  key={section}
-                  onClick={() => scrollToSection(section)}
-                  className="block w-full text-left px-4 py-3 text-white hover:text-blue-400 capitalize font-semibold hover:bg-blue-500/10 rounded-lg transition-all duration-300"
+          {/* Mobile Navigation */}
+          {isMenuOpen && (
+            <div className="lg:hidden bg-black/98 backdrop-blur-xl border-b border-purple-500/20">
+              <div className="px-6 pt-4 pb-6 space-y-3">
+                {['home', 'about', 'services', 'portfolio', 'testimonials', 'contact'].map((section) => (
+                  <button
+                    key={section}
+                    onClick={() => scrollToSection(section)}
+                    className="block w-full text-left px-4 py-3 text-white hover:text-blue-400 capitalize font-semibold hover:bg-blue-500/10 rounded-lg transition-all duration-300"
+                  >
+                    {section}
+                  </button>
+                ))}
+                <button 
+                  onClick={() => scrollToSection('contact')}
+                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-3 rounded-lg font-semibold mt-4"
                 >
-                  {section}
+                  Let&apos;s Talk
                 </button>
-              ))}
-              <button 
-                onClick={() => scrollToSection('contact')}
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-3 rounded-lg font-semibold mt-4"
-              >
-                Let's Talk
-              </button>
+              </div>
             </div>
-          </div>
-        )}
-      </nav>
+          )}
+        </nav>
 
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
@@ -333,7 +326,7 @@ export default function VAPortfolio() {
           <div className="absolute top-1/2 left-1/2 w-60 h-60 bg-pink-500/5 rounded-full blur-3xl animate-pulse" style={{animationDelay: '4s'}}></div>
         </div>
 
-        <div className="max-w-[1400px] mt-[9rem]  mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-16 items-center relative z-10">
+        <div className="max-w-[1400px] mt-[9rem] mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-16 items-center relative z-10">
           <div className="text-white space-y-8">
             <div className="space-y-6">
               <div className="flex items-center space-x-4 text-blue-400 font-bold text-lg">
@@ -345,7 +338,7 @@ export default function VAPortfolio() {
               </div>
               
               <h1 className="text-5xl lg:text-7xl font-black leading-tight">
-                I'm{" "}
+                I&apos;m{" "}
                 <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                   Adeola
                 </span>
@@ -356,7 +349,7 @@ export default function VAPortfolio() {
               </h1>
               
               <div className="block bg-gradient-to-r from-blue-500/20 to-purple-600/20 border border-blue-400/30 rounded-2xl px-8 py-6 backdrop-blur-sm">
-                <div className="text-2xl inline  font-bold text-blue-300 mb-2">
+                <div className="text-2xl inline font-bold text-blue-300 mb-2">
                   EXECUTIVE VIRTUAL ASSISTANT & <br />
                 </div>
                 <div className="text-2xl inline font-bold text-purple-300">
@@ -366,7 +359,7 @@ export default function VAPortfolio() {
             </div>
 
             <p className="text-xl lg:text-2xl text-gray-100 leading-relaxed max-w-2xl">
-              I don't just manage tasks—I transform businesses. As your strategic partner, I help ambitious entrepreneurs and executives 
+              I don&apos;t just manage tasks—I transform businesses. As your strategic partner, I help ambitious entrepreneurs and executives 
               <span className="text-blue-400 font-semibold"> scale from 6 to 7 figures</span> through systematic optimization, 
               strategic operations, and relentless execution excellence.
             </p>
@@ -379,7 +372,6 @@ export default function VAPortfolio() {
                   <span>Transforming one business empire at a time!</span>
                 </p>
               </div>
-              
             </div>
 
             <div className="flex flex-col sm:flex-row gap-6 pt-4">
@@ -414,9 +406,16 @@ export default function VAPortfolio() {
               </div>
 
               {/* Main Image Container */}
-              <div className=" mx-auto bg-gradient-to-br from-blue-500/20 to-purple-600/20 rounded-full flex items-end justify-center border-2 border-blue-400/30 shadow-2xl backdrop-blur-sm relative overflow-hidden">
+              <div className="mx-auto bg-gradient-to-br from-blue-500/20 to-purple-600/20 rounded-full flex items-end justify-center border-2 border-blue-400/30 shadow-2xl backdrop-blur-sm relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-600/10 animate-pulse"></div>
-                <img className="relative z-10 w-full h-full object-cover" src="assets/pic.png" alt="Adeola Tinuoye" />
+                <Image 
+                  className="relative z-10 w-full h-full object-cover" 
+                  src="/assets/pic.png" 
+                  alt="Adeola Tinuoye" 
+                  width={600}
+                  height={600}
+                  priority
+                />
               </div>
             </div>
           </div>
@@ -438,12 +437,12 @@ export default function VAPortfolio() {
               <div className="space-y-6">
                 <p className="text-xl text-gray-300 leading-relaxed">
                   With over <span className="text-blue-400 font-bold">8 years of elite experience</span> transforming businesses from the inside out, 
-                  I'm not your typical virtual assistant. I'm a strategic business partner who specializes in turning ambitious visions into 
+                  I&apos;m not your typical virtual assistant. I&apos;m a strategic business partner who specializes in turning ambitious visions into 
                   profitable realities.
                 </p>
                 <p className="text-xl text-gray-300 leading-relaxed">
                   My approach combines <span className="text-purple-400 font-bold">Fortune 500-level strategic thinking</span> with startup agility. 
-                  I don't just execute—I optimize, innovate, and scale. Every system I build, every process I design, and every strategy I implement 
+                  I don&apos;t just execute—I optimize, innovate, and scale. Every system I build, every process I design, and every strategy I implement 
                   is engineered for one purpose: <span className="text-pink-400 font-bold">exponential growth</span>.
                 </p>
               </div>
@@ -576,7 +575,7 @@ export default function VAPortfolio() {
                   ))}
                 </ul>
 
-                <button className="px-8 py-2 mt-8 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-4 rounded-2xl font-bold transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2">
+                <button className="w-full mt-8 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-4 rounded-2xl font-bold transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2">
                   <span>Get Started</span>
                   <ChevronRight className="w-5 h-5" />
                 </button>
@@ -594,7 +593,7 @@ export default function VAPortfolio() {
               Transformation Success Stories
             </h2>
             <p className="text-xl lg:text-2xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
-              Real businesses. Real results. Real transformation. Here's how I've helped visionary leaders 
+              Real businesses. Real results. Real transformation. Here&apos;s how I&apos;ve helped visionary leaders 
               build million-dollar operations and scale beyond their wildest dreams.
             </p>
             <div className="w-32 h-1.5 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 mx-auto mt-8 rounded-full"></div>
@@ -605,7 +604,6 @@ export default function VAPortfolio() {
               <div key={index} className="group bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-3xl border border-blue-400/20 overflow-hidden hover:border-blue-400/40 transition-all duration-500 hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20">
                 <div className="p-8">
                   <div className="flex items-center justify-between mb-6">
-                    
                     <div className="text-left">
                       <div className="bg-gradient-to-r from-blue-500/20 to-purple-600/20 text-blue-300 text-sm font-bold px-4 py-2 rounded-full border border-blue-400/30">
                         {item.category}
@@ -656,7 +654,7 @@ export default function VAPortfolio() {
               What Visionary Leaders Say
             </h2>
             <p className="text-xl lg:text-2xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
-              Don't just take my word for it. Here's what industry leaders and successful entrepreneurs 
+              Don&apos;t just take my word for it. Here&apos;s what industry leaders and successful entrepreneurs 
               have to say about the transformative impact of our partnership.
             </p>
             <div className="w-32 h-1.5 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 mx-auto mt-8 rounded-full"></div>
@@ -672,7 +670,7 @@ export default function VAPortfolio() {
                 </div>
                 
                 <p className="text-gray-300 mb-8 italic leading-relaxed text-lg">
-                  "{testimonial.content}"
+                  &ldquo;{testimonial.content}&rdquo;
                 </p>
                 
                 <div className="border-t border-gray-700 pt-6">
@@ -707,8 +705,8 @@ export default function VAPortfolio() {
               Ready to Scale Beyond Your Dreams?
             </h2>
             <p className="text-xl lg:text-2xl mb-12 max-w-4xl mx-auto leading-relaxed">
-              Let's have a strategic conversation about how I can help you build systems that scale, 
-              optimize operations that drive growth, and create the business empire you've always envisioned.
+              Let&apos;s have a strategic conversation about how I can help you build systems that scale, 
+              optimize operations that drive growth, and create the business empire you&apos;ve always envisioned.
             </p>
             
             <div className="grid md:grid-cols-3 gap-8 mb-12">
