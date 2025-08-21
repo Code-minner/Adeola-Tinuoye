@@ -369,7 +369,7 @@ export default function VAPortfolio() {
                 <div className="w-12 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400"></div>
                 <p className="text-blue-300 font-bold text-lg flex items-center space-x-2">
                   <Target className="w-5 h-5" />
-                  <span>Transforming one business empire at a time!</span>
+                  <span className='text-[12px] lg:text-[14px] '>Transforming one business empire at a time!</span>
                 </p>
               </div>
             </div>
