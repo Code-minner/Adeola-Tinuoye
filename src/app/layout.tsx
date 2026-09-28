@@ -13,9 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Virtual Assistant Portfolio | Professional Admin Support',
-  description: 'Professional virtual assistant services including email management, calendar scheduling, task automation, and project management. Streamline your business operations today.',
-  keywords: 'virtual assistant, admin support, email management, calendar scheduling, project management, business automation',
+  title: "Portfolio",
+  description: "Selected project recordings.",
 };
 
 export default function RootLayout({
@@ -25,9 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
       </body>
     </html>
