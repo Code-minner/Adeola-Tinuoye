@@ -55,16 +55,18 @@ const socials = [
 ];
 
 const navLinks = [
-  { label: "Main", href: "#" },
-  { label: "About", href: "#about" },
-  { label: "Projects", href: "#projects" },
-  { label: "Articles", href: "#articles" },
+  { label: "Main", href: "/" },
+  { label: "About", href: "/#about" },
+  { label: "Projects", href: "/#projects" },
+  { label: "Playground", href: "/playground" },
+  { label: "Articles", href: "/#articles" },
 ];
 
 export default function Footer() {
   return (
     <section
-      className="relative mx-auto w-full max-w-[1200px] overflow-hidden rounded-b-[32px] bg-[#0c0c0b] px-6 py-10 text-white sm:rounded-b-[48px] sm:px-10 sm:py-14 lg:px-14 lg:py-16"
+      id="contacts"
+      className="page-shell section-pad relative overflow-hidden rounded-b-[32px] bg-[#0c0c0b] text-white sm:rounded-b-[48px]"
       style={MONO_FONT}
     >
       {/* decorative ring, bleeding off the top-left edge */}
@@ -73,11 +75,11 @@ export default function Footer() {
         className="pointer-events-none absolute -left-40 -top-40 h-[480px] w-[480px] rounded-full border border-white/10 sm:-left-32 sm:-top-32"
       />
 
-      <div className="relative flex flex-col gap-12 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
+      <div className="relative flex flex-col gap-14 lg:flex-row lg:items-start lg:justify-between lg:gap-16">
         {/* name + subtitle + socials — order-2 on mobile so the contacts
             block (below) can appear above it, order-1 on desktop where it's
             the left column */}
-        <div className="order-2 flex flex-col gap-8 lg:order-1">
+        <div className="order-2 flex flex-col gap-10 lg:order-1">
           <div>
             <h2 className="text-6xl font-bold leading-none tracking-tight sm:text-7xl lg:text-8xl">
               Opeyemi
@@ -85,7 +87,7 @@ export default function Footer() {
             <h2 className="ml-10 text-6xl font-bold leading-none tracking-tight sm:ml-16 sm:text-7xl lg:text-8xl">
               Boluwatife
             </h2>
-            <p className="mt-4 text-sm text-white/60 sm:text-base">Full-stack developer</p>
+            <p className="mt-5 text-sm text-white/60 sm:text-base">Full-stack developer</p>
           </div>
 
           <ul className="flex flex-wrap gap-3">
@@ -107,10 +109,10 @@ export default function Footer() {
 
         {/* contacts eyebrow + nav + site card — order-1 on mobile (shows
             first), order-2 on desktop (right column) */}
-        <div className="order-1 flex w-full flex-col gap-6 lg:order-2 lg:w-[320px] lg:shrink-0">
+        <div className="order-1 flex w-full flex-col gap-8 lg:order-2 lg:w-[320px] lg:shrink-0">
           <div>
             <p className="text-sm font-semibold text-white sm:text-base">... /Contacts ...</p>
-            <ul className="mt-4 flex gap-6 text-sm text-white/70">
+            <ul className="mt-5 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/70">
               {navLinks.map((link) => (
                 <li key={link.label}>
                   <a href={link.href} className="transition-colors hover:text-white">
@@ -121,11 +123,11 @@ export default function Footer() {
             </ul>
           </div>
 
-          <div className="rounded-2xl border border-white/15 p-6">
+          <div className="rounded-2xl border border-white/15 p-6 sm:p-7">
             <h3 style={SANS_FONT} className="text-lg font-semibold">
               Site
             </h3>
-            <p className="mt-3 text-sm leading-relaxed text-white/70">
+            <p className="mt-4 text-sm leading-relaxed text-white/70">
               Handcrafted by{" "}
               <span className="text-white underline underline-offset-2">ME</span> /
             </p>

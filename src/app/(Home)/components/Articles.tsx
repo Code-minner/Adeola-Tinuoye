@@ -71,7 +71,8 @@ export default function Articles() {
 
   return (
     <section
-      className="relative mx-auto w-full max-w-[1200px] px-6 py-16 text-white sm:px-10 sm:py-20 lg:px-14"
+      id="articles"
+      className="page-shell section-pad relative text-white"
       style={MONO_FONT}
     >
       {/* heading */}
@@ -79,10 +80,10 @@ export default function Articles() {
         Articles
       </h2>
 
-      <div className="mt-10 border-t border-white/15" />
+      <div className="mt-8 border-t border-white/15 sm:mt-10" />
 
       {/* body: pagination rail + card grid */}
-      <div className="mt-10 grid grid-cols-[auto_1fr] gap-6 sm:gap-10">
+      <div className="mt-8 grid grid-cols-[auto_1fr] gap-6 sm:mt-10 sm:gap-10">
         {/* pagination rail */}
         <div className="flex flex-col items-center gap-3 pt-1">
           {pages.map((_, i) => (
@@ -115,7 +116,7 @@ export default function Articles() {
         </div>
 
         {/* card grid */}
-        <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
+        <div className="grid gap-5 sm:grid-cols-2 sm:gap-6">
           {current.map((article) => (
             <ArticleCard key={article.id} article={article} />
           ))}
@@ -127,15 +128,15 @@ export default function Articles() {
 
 function ArticleCard({ article }: { article: Article }) {
   return (
-    <div className="flex flex-col justify-between rounded-2xl border border-white/15 p-6 sm:p-7">
+    <div className="flex flex-col justify-between rounded-2xl border border-white/15 p-6 sm:p-8">
       <div>
         <h3 className="text-lg font-semibold leading-snug sm:text-xl">{article.title}</h3>
-        <p className="mt-3 text-sm leading-relaxed text-white/70">{article.description}</p>
+        <p className="mt-4 text-sm leading-relaxed text-white/70">{article.description}</p>
       </div>
 
       <a
         href={article.href}
-        className="group mt-6 inline-flex w-fit items-center gap-3"
+        className="group mt-8 inline-flex w-fit items-center gap-3"
         aria-label={`Read more: ${article.title}`}
       >
         <span className="rounded-full bg-white px-5 py-2 text-sm italic text-[#0c0c0b]">

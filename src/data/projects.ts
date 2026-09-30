@@ -7,6 +7,10 @@ export type Project = {
   cell: string;
   frame: string;
   inGrid: boolean;
+  tag?: string;
+  status?: "live" | "beta" | "lab";
+  year?: string;
+  stack?: string[];
 };
 
 export const projects: Project[] = [
@@ -16,7 +20,7 @@ export const projects: Project[] = [
     video: "/videos/urban.mp4",
     summary: "Screen recording of the Urban project.",
     points: [],
-    cell: "row-span-2 flex items-center justify-center",
+    cell: "md:row-span-2 md:flex md:items-center md:justify-center",
     frame: "aspect-[3/4]",
     inGrid: true,
   },
@@ -26,7 +30,7 @@ export const projects: Project[] = [
     video: "/videos/hers.mp4",
     summary: "Screen recording of the Hers project.",
     points: [],
-    cell: "flex items-end justify-center",
+    cell: "md:flex md:items-end md:justify-center",
     frame: "aspect-[4/5]",
     inGrid: true,
   },
@@ -41,8 +45,8 @@ export const projects: Project[] = [
       "Built for hiring across several industries",
       "Product walkthrough of the live interface",
     ],
-    cell: "row-span-2 flex items-center justify-center",
-    frame: "aspect-[3/4]",
+    cell: "col-span-2 md:col-span-1 md:row-span-2 md:flex md:items-center md:justify-center",
+    frame: "aspect-[16/10] md:aspect-[3/4]",
     inGrid: true,
   },
   {
@@ -51,7 +55,7 @@ export const projects: Project[] = [
     video: "/videos/sole.mp4",
     summary: "Screen recording of the Sole project.",
     points: [],
-    cell: "flex items-end justify-center",
+    cell: "md:flex md:items-end md:justify-center",
     frame: "aspect-[4/5]",
     inGrid: true,
   },
@@ -66,7 +70,7 @@ export const projects: Project[] = [
       "Company story and service presentation",
       "Recorded walkthrough of the site",
     ],
-    cell: "row-span-2 flex items-center justify-center",
+    cell: "md:row-span-2 md:flex md:items-center md:justify-center",
     frame: "aspect-[3/4]",
     inGrid: true,
   },
@@ -76,7 +80,7 @@ export const projects: Project[] = [
     video: "/videos/maven.mp4",
     summary: "Screen recording of the Maven project.",
     points: [],
-    cell: "flex items-start justify-center",
+    cell: "md:flex md:items-start md:justify-center",
     frame: "aspect-[4/5]",
     inGrid: true,
   },
@@ -86,7 +90,7 @@ export const projects: Project[] = [
     video: "/videos/constance.mp4",
     summary: "Screen recording of the Constance project.",
     points: [],
-    cell: "flex items-start justify-center",
+    cell: "md:flex md:items-start md:justify-center",
     frame: "aspect-[4/5]",
     inGrid: true,
   },
@@ -94,30 +98,48 @@ export const projects: Project[] = [
     id: "fgs",
     title: "FGS",
     video: "/videos/fgs.mp4",
-    summary: "Screen recording of the FGS project.",
-    points: [],
+    summary:
+      "A logistics-facing product surface — route clarity, status, and operational flow in one clean pass.",
+    points: ["Ops dashboard flow", "Status-first UI", "Built for speed on the floor"],
     cell: "",
     frame: "aspect-[4/5]",
     inGrid: false,
+    tag: "OPS",
+    status: "live",
+    year: "2025",
+    stack: ["TypeScript", "NextJs", "Node", "PostgreSQL", "Redis"],
   },
   {
     id: "mammut",
     title: "Mammut",
     video: "/videos/mammut.mp4",
-    summary: "Screen recording of the Mammut project.",
-    points: [],
+    summary:
+      "A brand-and-product experiment with heavy motion, bold frames, and a storefront that moves like a campaign.",
+    points: ["Campaign-grade motion", "Storefront storytelling", "High-impact product frames"],
     cell: "",
     frame: "aspect-[4/5]",
     inGrid: false,
+    tag: "COMMERCE",
+    status: "beta",
+    year: "2025",
+    stack: ["React", "TypeScript", "NextJs", "SCSS", "Framer"],
   },
   {
     id: "mitchell-adam",
     title: "Mitchell Adam",
     video: "/videos/MitchellAdam.mp4",
-    summary: "Screen recording of the Mitchell Adam project.",
-    points: [],
+    summary:
+      "A personal brand site with editorial pacing — portrait, story, and services laid out like a studio reel.",
+    points: ["Editorial layout", "Portrait-led storytelling", "Studio-grade presentation"],
     cell: "",
     frame: "aspect-[4/5]",
     inGrid: false,
+    tag: "STUDIO",
+    status: "lab",
+    year: "2024",
+    stack: ["NextJs", "TypeScript", "Tailwind", "GSAP"],
   },
 ];
+
+export const galleryProjects = projects.filter((project) => project.inGrid);
+export const playgroundProjects = projects.filter((project) => !project.inGrid);

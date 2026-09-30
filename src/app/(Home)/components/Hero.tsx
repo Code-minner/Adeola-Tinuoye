@@ -78,6 +78,7 @@ function Instagram(props: React.SVGProps<SVGSVGElement>) {
 const navLinks = [
   { label: "About", href: "#about" },
   { label: "Projects", href: "#projects" },
+  { label: "Playground", href: "/playground" },
   { label: "Articles", href: "#articles" },
   { label: "Contacts", href: "#contacts" },
 ];
@@ -129,8 +130,8 @@ const articles = [
 const SLIDE_WIDTH_CLASSES = "w-[88%] sm:w-[78%] lg:w-[68%]";
 
 // Animation timing — kept in one place so the loop stays in sync.
-const TRANSITION_MS = 500;
-const TRANSITION_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
+const TRANSITION_MS = 650;
+const TRANSITION_EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 
 // How long each slide stays before auto-advancing.
 const AUTOPLAY_MS = 3500;
@@ -243,39 +244,40 @@ export default function Hero() {
 
   // --- Touch / mouse swipe ---------------------------------------------
   const dragStartX = useRef<number | null>(null);
-  const dragDeltaX = useRef(0);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
 
   const onPointerDown = (e: React.PointerEvent) => {
     if (!withTransition) return;
     dragStartX.current = e.clientX;
-    dragDeltaX.current = 0;
+    setDragOffset(0);
+    setIsDragging(true);
     setPaused(true);
     e.currentTarget.setPointerCapture(e.pointerId);
   };
 
   const onPointerMove = (e: React.PointerEvent) => {
     if (dragStartX.current === null) return;
-    dragDeltaX.current = e.clientX - dragStartX.current;
+    setDragOffset(e.clientX - dragStartX.current);
   };
 
   const endDrag = () => {
     if (dragStartX.current === null) return;
-    if (dragDeltaX.current > SWIPE_THRESHOLD) go(-1);
-    else if (dragDeltaX.current < -SWIPE_THRESHOLD) go(1);
+    if (dragOffset > SWIPE_THRESHOLD) go(-1);
+    else if (dragOffset < -SWIPE_THRESHOLD) go(1);
     dragStartX.current = null;
-    dragDeltaX.current = 0;
+    setDragOffset(0);
+    setIsDragging(false);
     setPaused(false);
   };
 
   const slideWidth = metrics.slide;
   const centerOffset = (metrics.viewport - slideWidth) / 2;
   const translatePx = centerOffset - index * slideWidth;
-  // Live drag offset so the strip tracks the finger/cursor while dragging.
-  const dragOffset = dragStartX.current !== null ? dragDeltaX.current : 0;
 
   return (
     <section
-      className="relative mx-auto w-full max-w-[1200px] overflow-x-clip bg-[#0c0c0b] px-6 py-8 text-white sm:px-10 sm:py-10 lg:px-14 lg:py-12"
+      className="page-shell section-pad relative overflow-x-clip bg-[#0c0c0b] text-white"
       style={{ fontFamily: "var(--font-geist-mono, ui-monospace, monospace)" }}
     >
       {/* decorative corner ring */}
@@ -313,7 +315,7 @@ export default function Hero() {
       </nav>
 
       {/* headline */}
-      <div className="relative z-10 mt-14 sm:mt-20">
+      <div className="relative z-10 mt-12 sm:mt-16 lg:mt-20">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <h1 className="text-6xl font-bold leading-none tracking-tight sm:text-7xl lg:text-8xl">
             Full-stack
@@ -363,7 +365,7 @@ export default function Hero() {
 
       {/* article carousel */}
       <div
-        className="relative z-10 mt-12"
+        className="relative z-10 mt-12 sm:mt-14"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
         onFocusCapture={() => setPaused(true)}
@@ -385,7 +387,7 @@ export default function Hero() {
               style={{
                 transform: `translateX(${translatePx + dragOffset}px)`,
                 transition:
-                  withTransition && dragStartX.current === null
+                  withTransition && !isDragging
                     ? `transform ${TRANSITION_MS}ms ${TRANSITION_EASE}`
                     : "none",
               }}
@@ -396,18 +398,15 @@ export default function Hero() {
                   ref={i === index ? slideRef : undefined}
                   className={`shrink-0 px-2 sm:px-3 ${SLIDE_WIDTH_CLASSES}`}
                   style={{
-                    opacity: i === index ? 1 : 0.35,
+                    opacity: i === index ? 1 : 0.28,
+                    transform: i === index ? "scale(1)" : "scale(0.96)",
                     transition: withTransition
-                      ? `opacity ${TRANSITION_MS}ms ${TRANSITION_EASE}`
+                      ? `opacity ${TRANSITION_MS}ms ${TRANSITION_EASE}, transform ${TRANSITION_MS}ms ${TRANSITION_EASE}`
                       : "none",
                   }}
                 >
-                  {/* card: full-bleed image with a frosted glass panel on top.
-                      The gradient background is a fallback that shows through
-                      whenever the image hasn't loaded (or 404s), so a missing
-                      asset never renders as an empty/invisible slide. */}
                   <div
-                    className="relative h-[300px] overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1c1c1a] via-[#2a2a26] to-[#0c0c0b] sm:h-[340px] lg:h-[380px]"
+                    className="relative h-[300px] overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1c1c1a] via-[#2a2a26] to-[#0c0c0b] shadow-[0_20px_60px_rgba(0,0,0,0.35)] sm:h-[340px] lg:h-[380px]"
                   >
                     <img
                       src={article.image}

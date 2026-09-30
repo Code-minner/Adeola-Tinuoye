@@ -2,14 +2,9 @@
 
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { projects, type Project } from "@/data/projects";
+import { useSmartVideo } from "@/lib/useSmartVideo";
 
 const MONO_FONT = { fontFamily: "var(--font-geist-mono, ui-monospace, monospace)" };
-
-function seekToRandomStart(video: HTMLVideoElement) {
-  if (Number.isFinite(video.duration) && video.duration > 0.5) {
-    video.currentTime = Math.random() * Math.max(video.duration - 0.25, 0);
-  }
-}
 
 // --- Shared IntersectionObserver -------------------------------------
 // The previous version created one `new IntersectionObserver(...)` per
@@ -29,7 +24,7 @@ function getSharedObserver() {
         visibilityCallbacks.get(entry.target)?.(entry.isIntersecting);
       }
     },
-    { rootMargin: "200px 0px", threshold: 0 },
+    { rootMargin: "120px 0px", threshold: 0.2 },
   );
   return sharedObserver;
 }
@@ -80,7 +75,7 @@ export default function SelectedWork() {
 
   return (
     <section
-      className="relative mx-auto w-full max-w-[1400px] overflow-hidden px-6 py-20 text-white sm:px-10 lg:px-14"
+      className="page-shell section-pad relative overflow-hidden text-white"
       style={MONO_FONT}
     >
       {/* Section-level rings — page texture around the grid */}
@@ -102,7 +97,7 @@ export default function SelectedWork() {
         project shows here, and the layout adapts on its own at each
         breakpoint instead of relying on hard-coded per-index heights.
       */}
-      <div className="relative mt-14 grid grid-cols-2 gap-3 auto-rows-[140px] sm:grid-cols-3 sm:gap-4 sm:auto-rows-[170px] lg:grid-cols-5 lg:gap-5 lg:auto-rows-[190px]">
+      <div className="relative mt-12 grid auto-rows-[140px] grid-cols-2 gap-3 sm:mt-14 sm:auto-rows-[170px] sm:grid-cols-3 sm:gap-4 lg:mt-16 lg:auto-rows-[190px] lg:grid-cols-5 lg:gap-5">
         {projects.map((project, index) => (
           <Panel
             key={project.id}
@@ -134,32 +129,9 @@ const Panel = memo(function Panel({
 }) {
   const { ref, isVisible, hasEntered } = useInView<HTMLButtonElement>();
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const startedRef = useRef(false);
-  const reducedMotionRef = useRef(false);
   const [hovered, setHovered] = useState(false);
 
-  useEffect(() => {
-    reducedMotionRef.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  }, []);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video || reducedMotionRef.current) return;
-
-    if (isVisible) {
-      if (!startedRef.current) {
-        const onReady = () => {
-          seekToRandomStart(video);
-          startedRef.current = true;
-        };
-        if (video.readyState >= 1) onReady();
-        else video.addEventListener("loadedmetadata", onReady, { once: true });
-      }
-      void video.play();
-    } else {
-      video.pause();
-    }
-  }, [isVisible]);
+  useSmartVideo(videoRef, isVisible, { enabled: hasEntered });
 
   return (
     <button

@@ -1,17 +1,12 @@
 "use client";
 
 import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { projects, type Project } from "@/data/projects";
+import { galleryProjects, type Project } from "@/data/projects";
+import { useSmartVideo } from "@/lib/useSmartVideo";
 
-const collage = projects.filter((project) => project.inGrid);
+const collage = galleryProjects;
 
 const MONO_FONT = { fontFamily: "var(--font-geist-mono, ui-monospace, monospace)" };
-
-function seekToRandomStart(video: HTMLVideoElement) {
-  if (Number.isFinite(video.duration) && video.duration > 0.5) {
-    video.currentTime = Math.random() * Math.max(video.duration - 0.25, 0);
-  }
-}
 
 // --- Shared IntersectionObserver -------------------------------------
 // One `new IntersectionObserver(...)` per tile doesn't scale — each
@@ -33,7 +28,7 @@ function getSharedObserver() {
     },
     // Starts loading a little before a tile is actually visible, so
     // playback is ready by the time it's fully in view.
-    { rootMargin: "200px 0px", threshold: 0 },
+    { rootMargin: "120px 0px", threshold: 0.2 },
   );
   return sharedObserver;
 }
@@ -114,23 +109,21 @@ export default function ProjectCollage() {
 
   return (
     <section
-      className="relative mx-auto w-full max-w-[1200px] overflow-hidden bg-[#0c0c0b]"
+      id="projects"
+      className="page-shell section-pad relative overflow-hidden bg-[#0c0c0b]"
       style={MONO_FONT}
     >
       <SectionRings />
 
-      <div className="relative flex items-center justify-between px-6 pt-24 sm:px-10 lg:px-14">
-        <p className="text-xs uppercase tracking-[0.2em] text-white/50">Works</p>
+      <div className="relative flex items-end justify-between gap-4">
+        <div>
+          <p className="text-xs uppercase tracking-[0.2em] text-white/50">Works</p>
+          <p className="mt-2 text-sm text-white/40 md:hidden">Tap a frame to open the reel</p>
+        </div>
         <p className="text-xs text-white/40">{String(collage.length).padStart(2, "0")} projects</p>
       </div>
 
-      <div
-        className="mx-auto grid w-full items-center justify-center gap-1 pb-24 pt-10 sm:gap-2 md:gap-4 lg:gap-6"
-        style={{
-          gridTemplateColumns: "1fr 1fr 2fr 1fr 1fr",
-          gridTemplateRows: "auto auto",
-        }}
-      >
+      <div className="collage-grid relative mx-auto mt-8 grid w-full grid-cols-2 items-center justify-center gap-2.5 sm:mt-10 sm:gap-3 md:mt-12 md:gap-4 lg:gap-5">
         {collage.map((project, i) => (
           <ProjectTile
             key={project.id}
@@ -186,31 +179,8 @@ const ProjectTile = memo(function ProjectTile({
 }) {
   const { ref, isVisible, hasEntered } = useInView<HTMLDivElement>();
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const startedRef = useRef(false);
-  const reducedMotionRef = useRef(false);
 
-  useEffect(() => {
-    reducedMotionRef.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  }, []);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video || reducedMotionRef.current) return;
-
-    if (isVisible) {
-      if (!startedRef.current) {
-        const onReady = () => {
-          seekToRandomStart(video);
-          startedRef.current = true;
-        };
-        if (video.readyState >= 1) onReady();
-        else video.addEventListener("loadedmetadata", onReady, { once: true });
-      }
-      void video.play();
-    } else {
-      video.pause();
-    }
-  }, [isVisible]);
+  useSmartVideo(videoRef, isVisible, { enabled: hasEntered });
 
   // Stable per-tile handlers, tied to project.id so they don't get
   // recreated on every render of this tile.
@@ -226,7 +196,7 @@ const ProjectTile = memo(function ProjectTile({
       onMouseLeave={closeThis}
     >
       <div
-        className={`relative w-full origin-center overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1c1c1a] via-[#201f1b] to-[#0c0c0b] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${project.frame} ${active ? "scale-125 border-white/30" : "scale-100"}`}
+        className={`relative w-full origin-center overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-[#1c1c1a] via-[#201f1b] to-[#0c0c0b] transition-[transform,border-color,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:rounded-2xl ${project.frame} ${active ? "scale-[1.03] border-white/35 shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_20px_50px_rgba(0,0,0,0.45)] md:scale-110 lg:scale-[1.18]" : "scale-100"}`}
       >
         <button
           type="button"

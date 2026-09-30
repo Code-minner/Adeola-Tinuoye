@@ -73,8 +73,8 @@ const SkillCard = memo(function SkillCard({ title, variant, items }: SkillGroup)
     <div
       className={
         isSolid
-          ? "rounded-2xl bg-white p-6 sm:p-7"
-          : "rounded-2xl border border-white/15 p-6 sm:p-7"
+          ? "rounded-2xl bg-white p-6 sm:p-8"
+          : "rounded-2xl border border-white/15 p-6 sm:p-8"
       }
     >
       <h3
@@ -84,7 +84,7 @@ const SkillCard = memo(function SkillCard({ title, variant, items }: SkillGroup)
         {title}
       </h3>
       <p
-        className={`mt-3 text-sm leading-relaxed ${isSolid ? "text-[#0c0c0b]/70" : "text-white/60"}`}
+        className={`mt-4 text-sm leading-relaxed ${isSolid ? "text-[#0c0c0b]/70" : "text-white/60"}`}
       >
         {items.join(" / ")}
       </p>
@@ -110,11 +110,12 @@ export default function AboutMe() {
 
   return (
     <section
-      className="relative mx-auto w-full max-w-[1200px] px-6 py-16 text-white sm:px-10 sm:py-20 lg:px-14"
+      id="about"
+      className="page-shell section-pad relative text-white"
       style={{ fontFamily: "var(--font-geist-mono, ui-monospace, monospace)" }}
     >
       {/* header */}
-      <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between sm:gap-10">
         <p className="text-sm text-white/50">... /About me ...</p>
         <p className="max-w-md text-base leading-relaxed text-white/85 sm:text-lg">
           Hello! I&apos;m Nikita, I&apos;m a{" "}
@@ -125,12 +126,12 @@ export default function AboutMe() {
       </div>
 
       {/* body */}
-      <div className="mt-14 grid gap-10 lg:grid-cols-[1.3fr_1fr] lg:items-start">
+      <div className="mt-10 grid gap-10 lg:mt-12 lg:grid-cols-[1.3fr_1fr] lg:items-start lg:gap-12">
         {/* skill cards */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 sm:gap-5">
           <SkillCard {...frontEnd} />
 
-          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-5">
             <div className="w-full sm:flex-1">
               <SkillCard {...styles} />
             </div>
@@ -139,7 +140,7 @@ export default function AboutMe() {
 
           <SkillCard {...backEnd} />
 
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
             <div className="max-w-[240px] pt-1 sm:pt-8">
               <p className="text-sm leading-relaxed text-white/50">
                 Some of my{" "}

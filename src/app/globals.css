@@ -1,5 +1,28 @@
 @import "tailwindcss";
 
+:root {
+  --page-x: 1.25rem;
+  --section-y: 3.5rem;
+  --content-max: 1200px;
+  --surface: #0c0c0b;
+  --line: rgba(255, 255, 255, 0.1);
+  --glow: rgba(186, 230, 253, 0.08);
+}
+
+@media (min-width: 640px) {
+  :root {
+    --page-x: 2rem;
+    --section-y: 4rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --page-x: 2.5rem;
+    --section-y: 5rem;
+  }
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -7,24 +30,72 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background: #f9fafb;
-  color: #161613;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255, 255, 255, 0.06), transparent 55%),
+    var(--surface);
+  color: #ffffff;
   font-family: var(--font-geist-sans), sans-serif;
 }
 
-@keyframes project-card-in {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+.page-shell {
+  width: 100%;
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding-inline: var(--page-x);
+}
+
+.section-pad {
+  padding-block: var(--section-y);
+}
+
+.collage-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 768px) {
+  .collage-grid {
+    grid-template-columns: 1fr 1fr 2fr 1fr 1fr;
+    grid-template-rows: auto auto;
   }
 }
 
-.project-card-in {
-  animation: project-card-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+.futuristic-panel {
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.reveal-row {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal-row[data-from="left"] {
+  transform: translate3d(-36px, 18px, 0);
+}
+
+.reveal-row[data-from="right"] {
+  transform: translate3d(36px, 18px, 0);
+}
+
+.reveal-row.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.reveal-row .reveal-media {
+  transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.08s;
+}
+
+.reveal-row:not(.is-visible) .reveal-media {
+  transform: scale(0.98);
+}
+
+.reveal-row.is-visible .reveal-media {
+  transform: scale(1);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -32,7 +103,10 @@ body {
     scroll-behavior: auto;
   }
 
-  .project-card-in {
-    animation: none;
+  .reveal-row,
+  .reveal-row .reveal-media {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }
