@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import type { Project } from "@/data/projects";
 import { useSmartVideo } from "@/lib/useSmartVideo";
+import { warmVideo } from "@/lib/warmVideo";
 
 const MONO = { fontFamily: "var(--font-geist-mono, ui-monospace, monospace)" };
 
@@ -12,20 +13,47 @@ function VideoStage({ project, reverse }: { project: Project; reverse: boolean }
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const [visible, setVisible] = useState(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const node = stageRef.current;
     if (!node || typeof IntersectionObserver === "undefined") return;
 
     const observer = new IntersectionObserver(
-      ([entry]) => setVisible(entry.isIntersecting),
-      { threshold: 0.35, rootMargin: "40px 0px" },
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          warmVideo(project.video, "auto");
+        } else {
+          setVisible(false);
+        }
+      },
+      // Start fetching well before the row is on screen.
+      { threshold: 0.05, rootMargin: "280px 0px" },
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, []);
+  }, [project.video]);
 
-  useSmartVideo(videoRef, visible);
+  useSmartVideo(videoRef, visible, { randomStartOnce: false });
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !visible) return;
+    const mark = () => setReady(true);
+    if (video.readyState >= 2) mark();
+    video.addEventListener("loadeddata", mark);
+    video.addEventListener("canplay", mark);
+    try {
+      video.load();
+    } catch {
+      // ignore
+    }
+    return () => {
+      video.removeEventListener("loadeddata", mark);
+      video.removeEventListener("canplay", mark);
+    };
+  }, [visible, project.video]);
 
   return (
     <div ref={stageRef} className="relative w-full">
@@ -40,20 +68,18 @@ function VideoStage({ project, reverse }: { project: Project; reverse: boolean }
       <div className="futuristic-panel relative overflow-hidden rounded-[28px] border border-white/12 bg-[#10100e]">
         <div className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(135deg,rgba(255,255,255,0.1),transparent_30%,transparent_70%,rgba(186,230,253,0.07))]" />
 
-        <div className="relative aspect-[16/11] overflow-hidden sm:aspect-[16/10]">
+        <div className="relative aspect-[16/11] overflow-hidden bg-[#141412] sm:aspect-[16/10]">
           {visible ? (
             <video
               ref={videoRef}
-              className="h-full w-full object-cover"
+              className={`h-full w-full object-cover transition-opacity duration-500 ${ready ? "opacity-100" : "opacity-0"}`}
               src={project.video}
               muted
               loop
               playsInline
-              preload="none"
+              preload="auto"
             />
-          ) : (
-            <div className="h-full w-full bg-[#141412]" aria-hidden />
-          )}
+          ) : null}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-black/55 via-transparent to-black/20" />
 
           <span aria-hidden className="absolute left-4 top-4 h-5 w-5 border-l-2 border-t-2 border-white/50" />

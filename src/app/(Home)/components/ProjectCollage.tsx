@@ -4,6 +4,7 @@ import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { galleryProjects, type Project } from "@/data/projects";
 import { useSmartVideo } from "@/lib/useSmartVideo";
 import ScrollReveal from "@/components/ScrollReveal";
+import { warmVideo, warmVideos } from "@/lib/warmVideo";
 
 const slides = galleryProjects;
 const COUNT = slides.length;
@@ -122,6 +123,37 @@ export default function ProjectCollage() {
     },
     [goTo],
   );
+
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+
+    // Warm the first clips before the carousel is fully on screen.
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        const urls = [
+          slides[0]?.video,
+          slides[1]?.video,
+          slides[slides.length - 1]?.video,
+        ].filter(Boolean) as string[];
+        warmVideos(urls, "auto");
+        io.disconnect();
+      },
+      { rootMargin: "400px 0px", threshold: 0.01 },
+    );
+    io.observe(stage);
+    return () => io.disconnect();
+  }, []);
+
+  // Keep current + neighbours buffered while browsing.
+  useEffect(() => {
+    const urls = [0, 1, -1, 2, -2].map((d) => {
+      const i = ((index + d) % COUNT + COUNT) % COUNT;
+      return slides[i]?.video;
+    }).filter(Boolean) as string[];
+    warmVideos(urls, "auto");
+  }, [index]);
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -323,7 +355,9 @@ const SlideCard = memo(function SlideCard({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const abs = Math.abs(offset);
   const isFront = abs < 0.35;
+  const near = abs < 0.85;
   const visible = abs < (layout.mobile ? 1.9 : 2.35);
+  const [ready, setReady] = useState(false);
 
   const rotateY = offset * (layout.mobile ? -24 : -26);
   const x = offset * layout.step;
@@ -333,7 +367,33 @@ const SlideCard = memo(function SlideCard({
   const blur = Math.min(abs, 2) * (layout.mobile ? 1.6 : 2.6);
   const brightness = 1 - Math.min(abs, 2) * 0.3;
 
-  useSmartVideo(videoRef, abs < 0.85, { enabled: visible, randomStartOnce: true });
+  // Start from 0 — random seek forces a late download and feels slow.
+  useSmartVideo(videoRef, near, { enabled: visible, randomStartOnce: false });
+
+  useEffect(() => {
+    setReady(false);
+    const video = videoRef.current;
+    if (!video || !visible) return;
+
+    const mark = () => setReady(true);
+    if (video.readyState >= 2) mark();
+    video.addEventListener("loadeddata", mark);
+    video.addEventListener("canplay", mark);
+    // Kick the network immediately for front/near cards.
+    if (near) {
+      video.preload = "auto";
+      try {
+        video.load();
+      } catch {
+        // ignore
+      }
+    }
+
+    return () => {
+      video.removeEventListener("loadeddata", mark);
+      video.removeEventListener("canplay", mark);
+    };
+  }, [project.video, visible, near]);
 
   const handleClick = () => {
     if (suppressClickRef.current) {
@@ -365,17 +425,19 @@ const SlideCard = memo(function SlideCard({
         onClick={handleClick}
         className="pc-face"
       >
-        <video
-          ref={videoRef}
-          className="h-full w-full object-cover object-center"
-          src={project.video}
-          muted
-          loop
-          playsInline
-          preload={isFront ? "metadata" : "none"}
-          disablePictureInPicture
-          disableRemotePlayback
-        />
+        <span className={`pc-video-shell ${ready ? "is-ready" : ""}`}>
+          <video
+            ref={videoRef}
+            className="h-full w-full object-cover object-center"
+            src={project.video}
+            muted
+            loop
+            playsInline
+            preload={near ? "auto" : "metadata"}
+            disablePictureInPicture
+            disableRemotePlayback
+          />
+        </span>
         <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
 
         {isFront && (
@@ -501,6 +563,9 @@ const CSS = `
 .pc-card{position:absolute;left:50%;top:50%;will-change:transform,opacity,filter;backface-visibility:hidden}
 .pc-face{position:relative;display:block;width:100%;height:100%;overflow:hidden;border-radius:20px;border:1px solid rgba(255,255,255,.12);
   background:#111;text-align:left;cursor:pointer;box-shadow:0 18px 40px -18px rgba(0,0,0,.8);transition:border-color .4s,box-shadow .4s}
+.pc-video-shell{position:absolute;inset:0;background:#141412}
+.pc-video-shell video{opacity:0;transition:opacity .45s ease}
+.pc-video-shell.is-ready video{opacity:1}
 .pc-card.is-front .pc-face{border-color:rgba(255,255,255,.34);box-shadow:0 36px 80px -24px rgba(0,0,0,.95),0 0 70px -18px rgba(255,255,255,.16)}
 .pc-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s}
 .pc-play::before{content:"";position:absolute;width:48px;height:48px;border-radius:50%;border:1px solid rgba(255,255,255,.4);background:rgba(0,0,0,.45);backdrop-filter:blur(4px)}
