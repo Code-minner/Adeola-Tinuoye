@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ArrowRight, ArrowLeft, Send, Mail } from "lucide-react";
+import ScrollReveal from "@/components/ScrollReveal";
 
 // lucide-react v1 removed trademarked brand icons (Github, Linkedin, Facebook,
 // Instagram, etc). These are small inline replacements in the same 24x24
@@ -142,39 +143,33 @@ const SWIPE_THRESHOLD = 40;
 export default function Hero() {
   const count = articles.length;
 
-  // 🔁 Extended strip for a seamless infinite loop:
-  //    [clone of LAST, ...real articles, clone of FIRST]
-  //    Index map: 0 = clone last, 1..count = real, count+1 = clone first
+  // Extended strip for a seamless infinite loop:
+  // [clone of LAST, ...real articles, clone of FIRST]
   const strip = [articles[count - 1], ...articles, articles[0]];
 
-  // Start on the 2nd real article (extended index 2).
-  const [index, setIndex] = useState(2);
-
-  // Transition flag. Starts false so the very first paint doesn't animate,
-  // and is toggled off briefly whenever we silently snap from a clone to
-  // its real counterpart.
+  // Start on the first real article (extended index 1).
+  const [index, setIndex] = useState(1);
   const [withTransition, setWithTransition] = useState(false);
-
-  // Pause autoplay while the user hovers/touches the carousel or after a manual click.
   const [paused, setPaused] = useState(false);
+  const [hidden, setHidden] = useState(false);
 
-  // --- Pixel-accurate measurement -------------------------------------
-  // The old version positioned slides with a hard-coded percentage, which
-  // only stays correct if the rendered slide width exactly matches that
-  // number at every breakpoint. Any drift (responsive width classes, a late
-  // web font, a scrollbar) pushes the "current" slide out of view. Measuring
-  // the actual DOM size removes that failure mode entirely.
   const viewportRef = useRef<HTMLDivElement>(null);
-  const slideRef = useRef<HTMLDivElement>(null);
+  // Always measure a stable probe slide — NEVER the active one.
+  // Measuring the moving active slide is what blanks the carousel after
+  // tab switches / page restores when width briefly reads as 0.
+  const probeRef = useRef<HTMLDivElement>(null);
+  const metricsRef = useRef({ viewport: 0, slide: 0 });
   const [metrics, setMetrics] = useState({ viewport: 0, slide: 0 });
 
   const measure = useCallback(() => {
     const viewport = viewportRef.current?.offsetWidth ?? 0;
-    const slide = slideRef.current?.offsetWidth ?? 0;
+    const slide = probeRef.current?.offsetWidth ?? 0;
+    if (viewport <= 0 || slide <= 0) return;
+
+    const next = { viewport, slide };
+    metricsRef.current = next;
     setMetrics((prev) =>
-      prev.viewport === viewport && prev.slide === slide
-        ? prev
-        : { viewport, slide }
+      prev.viewport === next.viewport && prev.slide === next.slide ? prev : next,
     );
   }, []);
 
@@ -182,73 +177,88 @@ export default function Hero() {
     measure();
     const ro = new ResizeObserver(measure);
     if (viewportRef.current) ro.observe(viewportRef.current);
-    if (slideRef.current) ro.observe(slideRef.current);
+    if (probeRef.current) ro.observe(probeRef.current);
     window.addEventListener("resize", measure);
+    window.addEventListener("pageshow", measure);
     return () => {
       ro.disconnect();
       window.removeEventListener("resize", measure);
+      window.removeEventListener("pageshow", measure);
     };
   }, [measure]);
 
-  // Re-enable transitions once the DOM has settled after a snap (or on mount).
-  // Double rAF guarantees the browser has painted the "no-transition" state
-  // before we turn transitions back on.
+  // Re-enable transitions after a silent clone snap (or first paint).
   useEffect(() => {
     if (withTransition) return;
     let raf2 = 0;
     const raf1 = requestAnimationFrame(() => {
-      raf2 = requestAnimationFrame(() => setWithTransition(true));
+      raf2 = requestAnimationFrame(() => {
+        measure();
+        setWithTransition(true);
+      });
     });
     return () => {
       cancelAnimationFrame(raf1);
       cancelAnimationFrame(raf2);
     };
-  }, [withTransition]);
+  }, [withTransition, measure]);
 
-  // ⏱️ Autoplay — advances one slide every AUTOPLAY_MS.
+  // Tab leave / return — pause while hidden, remasure + resume when visible.
   useEffect(() => {
-    if (paused) return;
-    if (!withTransition) return; // wait until the snap has settled
+    const sync = () => {
+      const isHidden = document.visibilityState === "hidden";
+      setHidden(isHidden);
+      if (!isHidden) {
+        requestAnimationFrame(() => {
+          measure();
+          setWithTransition(true);
+        });
+      }
+    };
+    sync();
+    document.addEventListener("visibilitychange", sync);
+    return () => document.removeEventListener("visibilitychange", sync);
+  }, [measure]);
 
-    const id = setTimeout(() => {
+  useEffect(() => {
+    if (paused || hidden || !withTransition) return;
+    if (metricsRef.current.slide <= 0) return;
+
+    const id = window.setTimeout(() => {
       setIndex((i) => i + 1);
     }, AUTOPLAY_MS);
 
-    return () => clearTimeout(id);
-  }, [index, paused, withTransition]);
+    return () => window.clearTimeout(id);
+  }, [index, paused, hidden, withTransition]);
 
-  const go = (delta: number) => {
-    // Ignore clicks while we're silently snapping between clones.
-    if (!withTransition) return;
-    // Clamp to the extended strip so rapid clicks can't fall off the ends.
-    setIndex((i) => Math.max(0, Math.min(count + 1, i + delta)));
-  };
+  const go = useCallback(
+    (delta: number) => {
+      if (!withTransition) return;
+      setIndex((i) => Math.max(0, Math.min(count + 1, i + delta)));
+    },
+    [withTransition, count],
+  );
 
   const handleTransitionEnd = (e: React.TransitionEvent<HTMLDivElement>) => {
-    // Only react to the transform transition — child opacity transitions also
-    // bubble up here and would fire this handler again.
     if (e.propertyName !== "transform") return;
+    if (e.target !== e.currentTarget) return;
 
     if (index === count + 1) {
-      // We just animated onto the clone of the FIRST article.
-      // Silently jump to the real FIRST article — visually identical position.
       setWithTransition(false);
       setIndex(1);
     } else if (index === 0) {
-      // We just animated onto the clone of the LAST article.
-      // Silently jump to the real LAST article.
       setWithTransition(false);
       setIndex(count);
     }
   };
 
-  // --- Touch / mouse swipe ---------------------------------------------
   const dragStartX = useRef<number | null>(null);
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
   const onPointerDown = (e: React.PointerEvent) => {
     if (!withTransition) return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
     dragStartX.current = e.clientX;
     setDragOffset(0);
     setIsDragging(true);
@@ -271,9 +281,12 @@ export default function Hero() {
     setPaused(false);
   };
 
-  const slideWidth = metrics.slide;
-  const centerOffset = (metrics.viewport - slideWidth) / 2;
-  const translatePx = centerOffset - index * slideWidth;
+  // Never allow a 0 slide width to wipe the carousel off-screen.
+  const slideWidth = metrics.slide || metricsRef.current.slide;
+  const viewportWidth = metrics.viewport || metricsRef.current.viewport;
+  const ready = slideWidth > 0 && viewportWidth > 0;
+  const centerOffset = ready ? (viewportWidth - slideWidth) / 2 : 0;
+  const translatePx = ready ? centerOffset - index * slideWidth : 0;
 
   return (
     <section
@@ -287,7 +300,7 @@ export default function Hero() {
       />
 
       {/* nav */}
-      <nav className="relative z-10 flex items-start justify-between">
+      <ScrollReveal eager as="nav" className="relative z-10 flex items-start justify-between">
         <div className="text-base leading-tight">
           <p>Opeyemi</p>
           <p>Boluwatife</p>
@@ -312,42 +325,50 @@ export default function Hero() {
           </button>
           <button className="text-white">Ge</button>
         </div>
-      </nav>
+      </ScrollReveal>
 
       {/* headline */}
       <div className="relative z-10 mt-12 sm:mt-16 lg:mt-20">
         <div className="flex flex-wrap items-end justify-between gap-6">
-          <h1 className="text-6xl font-bold leading-none tracking-tight sm:text-7xl lg:text-8xl">
-            Full-stack
-          </h1>
+          <ScrollReveal eager delay={90}>
+            <h1 className="text-6xl font-bold leading-none tracking-tight sm:text-7xl lg:text-8xl">
+              Full-stack
+            </h1>
+          </ScrollReveal>
 
-          <a
-            href="#projects"
-            className="group inline-flex items-center gap-4 rounded-full bg-white py-2 pl-6 pr-2 text-base italic text-[#0c0c0b]"
-          >
-            Projects
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0c0c0b] text-white transition-transform group-hover:translate-x-0.5">
-              <ArrowRight className="h-4 w-4" />
-            </span>
-          </a>
+          <ScrollReveal eager delay={160} from="right">
+            <a
+              href="#projects"
+              className="group inline-flex items-center gap-4 rounded-full bg-white py-2 pl-6 pr-2 text-base italic text-[#0c0c0b]"
+            >
+              Projects
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0c0c0b] text-white transition-transform group-hover:translate-x-0.5">
+                <ArrowRight className="h-4 w-4" />
+              </span>
+            </a>
+          </ScrollReveal>
         </div>
 
         <div className="mt-6 grid gap-6 md:grid-cols-2 md:items-end md:gap-10">
-          <p className="max-w-md text-sm leading-relaxed text-white/70 sm:text-base">
-            My goal is to{" "}
-            <em className="italic text-white">write maintainable, clean</em> and{" "}
-            <em className="italic text-white">understandable code</em> to
-            process development was enjoyable.
-          </p>
+          <ScrollReveal eager delay={220}>
+            <p className="max-w-md text-sm leading-relaxed text-white/70 sm:text-base">
+              My goal is to{" "}
+              <em className="italic text-white">write maintainable, clean</em> and{" "}
+              <em className="italic text-white">understandable code</em> to
+              process development was enjoyable.
+            </p>
+          </ScrollReveal>
 
-          <h1 className="text-right text-6xl font-bold leading-none tracking-tight sm:text-7xl lg:text-9xl">
-            Developer
-          </h1>
+          <ScrollReveal eager delay={280} from="right">
+            <h1 className="text-right text-6xl font-bold leading-none tracking-tight sm:text-7xl lg:text-9xl">
+              Developer
+            </h1>
+          </ScrollReveal>
         </div>
       </div>
 
       {/* socials */}
-      <ul className="relative z-10 mt-10 flex flex-wrap gap-3">
+      <ScrollReveal eager delay={340} as="ul" className="relative z-10 mt-10 flex flex-wrap gap-3">
         {socials.map(({ label, href, icon: Icon }) => (
           <li key={label}>
             <a
@@ -361,11 +382,11 @@ export default function Hero() {
             </a>
           </li>
         ))}
-      </ul>
+      </ScrollReveal>
 
       {/* article carousel */}
+      <ScrollReveal eager delay={420} className="relative z-10 mt-12 sm:mt-14">
       <div
-        className="relative z-10 mt-12 sm:mt-14"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
         onFocusCapture={() => setPaused(true)}
@@ -374,91 +395,85 @@ export default function Hero() {
         <div className="relative">
           <div
             ref={viewportRef}
-            className="overflow-hidden touch-pan-y"
+            className="cursor-grab overflow-hidden touch-pan-x active:cursor-grabbing"
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={endDrag}
             onPointerCancel={endDrag}
-            onPointerLeave={endDrag}
           >
             <div
               onTransitionEnd={handleTransitionEnd}
-              className="flex select-none"
+              className="flex select-none will-change-transform"
               style={{
-                transform: `translateX(${translatePx + dragOffset}px)`,
+                transform: ready ? `translate3d(${translatePx + dragOffset}px, 0, 0)` : undefined,
+                opacity: ready ? 1 : 0,
                 transition:
-                  withTransition && !isDragging
+                  withTransition && !isDragging && ready
                     ? `transform ${TRANSITION_MS}ms ${TRANSITION_EASE}`
                     : "none",
               }}
             >
-              {strip.map((article, i) => (
-                <div
-                  key={`${article.id}-${i}`}
-                  ref={i === index ? slideRef : undefined}
-                  className={`shrink-0 px-2 sm:px-3 ${SLIDE_WIDTH_CLASSES}`}
-                  style={{
-                    opacity: i === index ? 1 : 0.28,
-                    transform: i === index ? "scale(1)" : "scale(0.96)",
-                    transition: withTransition
-                      ? `opacity ${TRANSITION_MS}ms ${TRANSITION_EASE}, transform ${TRANSITION_MS}ms ${TRANSITION_EASE}`
-                      : "none",
-                  }}
-                >
+              {strip.map((article, i) => {
+                const isActive = i === index;
+                // Stable probe: always measure the first real slide (index 1).
+                const isProbe = i === 1;
+                return (
                   <div
-                    className="relative h-[300px] overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1c1c1a] via-[#2a2a26] to-[#0c0c0b] shadow-[0_20px_60px_rgba(0,0,0,0.35)] sm:h-[340px] lg:h-[380px]"
+                    key={`${article.id}-${i}`}
+                    ref={isProbe ? probeRef : undefined}
+                    className={`shrink-0 px-2 sm:px-3 ${SLIDE_WIDTH_CLASSES}`}
+                    style={{
+                      opacity: isActive ? 1 : 0.45,
+                      transform: isActive ? "scale(1)" : "scale(0.94)",
+                      transition: withTransition
+                        ? `opacity ${TRANSITION_MS}ms ${TRANSITION_EASE}, transform ${TRANSITION_MS}ms ${TRANSITION_EASE}`
+                        : "none",
+                    }}
                   >
-                    <img
-                      src={article.image}
-                      alt={article.title}
-                      draggable={false}
-                      className="absolute inset-0 h-full w-full object-cover"
-                      onError={(e) => {
-                        // Hide the broken-image glyph and let the gradient
-                        // fallback show instead of a blank card.
-                        e.currentTarget.style.display = "none";
-                      }}
-                    />
+                    <div className="relative h-[300px] overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1c1c1a] via-[#2a2a26] to-[#0c0c0b] shadow-[0_20px_60px_rgba(0,0,0,0.35)] sm:h-[340px] lg:h-[400px]">
+                      <img
+                        src={article.image}
+                        alt={article.title}
+                        draggable={false}
+                        loading="lazy"
+                        decoding="async"
+                        className="absolute inset-0 h-full w-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
 
-                    {/*
-                      Contrast gradient behind the glass panel.
-                      Mobile: bottom-up (panel is at the bottom).
-                      Desktop: left-to-right (panel is on the right).
-                    */}
-                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent sm:bg-gradient-to-r sm:from-transparent sm:via-transparent sm:to-black/50" />
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent sm:bg-gradient-to-r sm:from-transparent sm:via-transparent sm:to-black/50" />
 
-                    {/*
-                      Frosted glass panel.
-                      Mobile: anchored bottom, 70% height, full width.
-                      Desktop (sm+): right half, full height.
-                    */}
-                    <div className="absolute bottom-0 left-0 right-0 flex h-[60%] flex-col justify-end gap-3 border-t border-white/15 bg-white/[0.06] p-5 backdrop-blur-2xl backdrop-saturate-150 sm:inset-y-0 sm:left-auto sm:h-auto sm:w-1/2 sm:justify-center sm:gap-4 sm:border-l sm:border-t-0 sm:p-8">
-                      {/* top hairline highlight — sells the "pane of glass" look */}
-                      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+                      <div className="absolute bottom-0 left-0 right-0 flex h-[60%] flex-col justify-end gap-3 border-t border-white/15 bg-white/[0.06] p-5 backdrop-blur-2xl backdrop-saturate-150 sm:inset-y-0 sm:left-auto sm:h-auto sm:w-1/2 sm:justify-center sm:gap-4 sm:border-l sm:border-t-0 sm:p-8">
+                        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
 
-                      <h3 className="text-base font-semibold leading-snug sm:text-xl">
-                        {article.title}
-                      </h3>
-                      <p className="text-xs leading-relaxed text-white/70 sm:text-sm">
-                        {article.description}
-                      </p>
-                      <a
-                        href={article.href}
-                        className="group inline-flex w-fit items-center gap-3 rounded-full bg-white py-1.5 pl-4 pr-1.5 text-xs italic text-[#0c0c0b] sm:py-2 sm:pl-5 sm:pr-2 sm:text-sm"
-                      >
-                        Read more
-                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0c0c0b] text-white transition-transform group-hover:translate-x-0.5 sm:h-8 sm:w-8">
-                          <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                        </span>
-                      </a>
+                        <h3 className="text-base font-semibold leading-snug sm:text-xl">
+                          {article.title}
+                        </h3>
+                        <p className="text-xs leading-relaxed text-white/70 sm:text-sm">
+                          {article.description}
+                        </p>
+                        <a
+                          href={article.href}
+                          className="group inline-flex w-fit items-center gap-3 rounded-full bg-white py-1.5 pl-4 pr-1.5 text-xs italic text-[#0c0c0b] sm:py-2 sm:pl-5 sm:pr-2 sm:text-sm"
+                          onPointerDown={(e) => e.stopPropagation()}
+                        >
+                          Read more
+                          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0c0c0b] text-white transition-transform group-hover:translate-x-0.5 sm:h-8 sm:w-8">
+                            <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                          </span>
+                        </a>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
           <button
+            type="button"
             aria-label="Previous article"
             onClick={() => go(-1)}
             className="absolute left-0 top-1/2 z-20 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-[#0c0c0b] transition-colors hover:border-white/40"
@@ -466,14 +481,37 @@ export default function Hero() {
             <ArrowLeft className="h-4 w-4" />
           </button>
           <button
+            type="button"
             aria-label="Next article"
             onClick={() => go(1)}
             className="absolute right-0 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-white/20 bg-[#0c0c0b] transition-colors hover:border-white/40"
           >
             <ArrowRight className="h-4 w-4" />
           </button>
+
+          <div className="mt-5 flex items-center justify-center gap-2">
+            {articles.map((article, i) => {
+              const activeDot = index === i + 1 || (index === count + 1 && i === 0) || (index === 0 && i === count - 1);
+              return (
+                <button
+                  key={article.id}
+                  type="button"
+                  aria-label={`Go to slide ${i + 1}`}
+                  aria-current={activeDot}
+                  onClick={() => {
+                    if (!withTransition) return;
+                    setIndex(i + 1);
+                  }}
+                  className={`h-1.5 rounded-full transition-all duration-500 ${
+                    activeDot ? "w-8 bg-white" : "w-1.5 bg-white/30 hover:bg-white/50"
+                  }`}
+                />
+              );
+            })}
+          </div>
         </div>
       </div>
+      </ScrollReveal>
     </section>
   );
 }

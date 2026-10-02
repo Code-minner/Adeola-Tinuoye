@@ -1,6 +1,7 @@
 /**
- * Safe video helpers — avoids the browser warning:
- * "The play() request was interrupted by a call to pause()."
+ * Safe video helpers — avoids:
+ * - "play() request was interrupted by a call to pause()"
+ * - "video-only background media was paused to save power"
  */
 
 export function seekToRandomStart(video: HTMLVideoElement) {
@@ -29,7 +30,13 @@ function getState(video: HTMLVideoElement): PlaybackState {
   return state;
 }
 
-/** Request playback. Safe to call repeatedly; handles AbortError. */
+function canAttemptPlay() {
+  if (typeof document === "undefined") return false;
+  // Chrome pauses muted video as "background media" when the tab is hidden.
+  return document.visibilityState === "visible";
+}
+
+/** Request playback. Safe to call repeatedly; handles AbortError / power-save. */
 export function requestPlay(video: HTMLVideoElement, options?: { randomStart?: boolean }) {
   const state = getState(video);
   state.wanted = true;
@@ -37,14 +44,20 @@ export function requestPlay(video: HTMLVideoElement, options?: { randomStart?: b
 
   const begin = () => {
     if (!state.wanted || generation !== state.generation) return;
+    if (!canAttemptPlay()) return;
+    if (!video.isConnected) return;
 
     if (options?.randomStart) seekToRandomStart(video);
+
+    // Ensure muted + playsInline so autoplay policies stay happy.
+    video.muted = true;
+    video.playsInline = true;
 
     const request = video.play();
     state.playRequest = request;
     void request
       .catch(() => {
-        // AbortError when pause() wins the race — expected, ignore.
+        // AbortError / NotAllowedError / power-save pause — expected, ignore.
       })
       .finally(() => {
         if (state.playRequest === request) state.playRequest = null;

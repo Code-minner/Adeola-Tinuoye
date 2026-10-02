@@ -3,6 +3,7 @@
 import { memo } from "react";
 import Image from "next/image";
 import { ArrowUpRight, Megaphone } from "lucide-react";
+import ScrollReveal from "@/components/ScrollReveal";
 
 // Headings use a plain sans face for contrast against the monospace body
 // copy, matching the reference. Swap the fallback if your Geist Sans var is
@@ -115,73 +116,75 @@ export default function AboutMe() {
       style={{ fontFamily: "var(--font-geist-mono, ui-monospace, monospace)" }}
     >
       {/* header */}
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between sm:gap-10">
-        <p className="text-sm text-white/50">... /About me ...</p>
-        <p className="max-w-md text-base leading-relaxed text-white/85 sm:text-lg">
-          Hello! I&apos;m Nikita, I&apos;m a{" "}
-          <em className="italic text-white">full-stack developer</em>.
-          <br />
-          More than <em className="italic text-white">5 years</em> experience.
-        </p>
-      </div>
+      <ScrollReveal>
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between sm:gap-10">
+          <p className="text-sm text-white/50">... /About me ...</p>
+          <p className="max-w-md text-base leading-relaxed text-white/85 sm:text-lg">
+            Hello! I&apos;m Nikita, I&apos;m a{" "}
+            <em className="italic text-white">full-stack developer</em>.
+            <br />
+            More than <em className="italic text-white">5 years</em> experience.
+          </p>
+        </div>
+      </ScrollReveal>
 
       {/* body */}
       <div className="mt-10 grid gap-10 lg:mt-12 lg:grid-cols-[1.3fr_1fr] lg:items-start lg:gap-12">
         {/* skill cards */}
         <div className="flex flex-col gap-4 sm:gap-5">
-          <SkillCard {...frontEnd} />
+          <ScrollReveal delay={60}>
+            <SkillCard {...frontEnd} />
+          </ScrollReveal>
 
-          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-5">
-            <div className="w-full sm:flex-1">
-              <SkillCard {...styles} />
+          <ScrollReveal delay={120}>
+            <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-5">
+              <div className="w-full sm:flex-1">
+                <SkillCard {...styles} />
+              </div>
+              <PillButton />
             </div>
-            <PillButton />
-          </div>
+          </ScrollReveal>
 
-          <SkillCard {...backEnd} />
+          <ScrollReveal delay={180}>
+            <SkillCard {...backEnd} />
+          </ScrollReveal>
 
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
-            <div className="max-w-[240px] pt-1 sm:pt-8">
-              <p className="text-sm leading-relaxed text-white/50">
-                Some of my{" "}
-                <em className="italic text-white/80">
-                  favorite technologies, topics, or tools
-                </em>{" "}
-                that I worked with
-              </p>
+          <ScrollReveal delay={240}>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
+              <div className="max-w-[240px] pt-1 sm:pt-8">
+                <p className="text-sm leading-relaxed text-white/50">
+                  Some of my{" "}
+                  <em className="italic text-white/80">
+                    favorite technologies, topics, or tools
+                  </em>{" "}
+                  that I worked with
+                </p>
+              </div>
+              <div className="w-full sm:flex-1">
+                <SkillCard {...devOps} />
+              </div>
             </div>
-            <div className="w-full sm:flex-1">
-              <SkillCard {...devOps} />
-            </div>
-          </div>
+          </ScrollReveal>
         </div>
 
         {/* portrait + decorative ring */}
-        <div className="relative mx-auto flex w-full max-w-sm items-center justify-center lg:mx-0 lg:max-w-none">
+        <ScrollReveal delay={140} from="right" className="relative mx-auto flex w-full max-w-sm items-center justify-center lg:mx-0 lg:max-w-none">
           <div
             aria-hidden
             className="pointer-events-none absolute -right-16 -top-28 h-[420px] w-[420px] rounded-full border border-white/10 lg:-right-10 lg:-top-32"
           />
           <div className="relative aspect-[4/5] w-full max-w-sm overflow-hidden rounded-[28px] border border-white/10 bg-gradient-to-b from-white/10 via-white/5 to-white/[0.02]">
-            {/*
-              next/image instead of a raw <img>: gives automatic responsive
-              srcset, lazy loading below the fold, and modern-format (webp/
-              avif) serving without any extra work. `fill` + `sizes` lets it
-              size itself off this aspect-[4/5] container.
-              object-contain keeps the whole photo visible with nothing
-              cropped off the edges — the gradient behind fills any
-              letterboxed space so it still looks intentional rather than
-              empty. Swap the src for your actual portrait file.
-            */}
             <Image
               src="/nikita-portrait.jpg"
               alt="Portrait of Nikita"
               fill
               sizes="(min-width: 1024px) 420px, 90vw"
+              quality={75}
+              loading="lazy"
               className="relative z-10 object-contain"
             />
           </div>
-        </div>
+        </ScrollReveal>
       </div>
     </section>
   );

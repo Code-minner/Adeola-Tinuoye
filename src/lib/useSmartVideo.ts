@@ -7,6 +7,7 @@ import { requestPause, requestPlay } from "@/lib/videoPlayback";
  * Plays a video while `active` is true, pauses otherwise.
  * Generation-safe so IntersectionObserver churn never throws
  * "play() request was interrupted by a call to pause()".
+ * Also respects tab visibility to avoid Chrome power-save warnings.
  */
 export function useSmartVideo(
   videoRef: React.RefObject<HTMLVideoElement | null>,
@@ -14,8 +15,11 @@ export function useSmartVideo(
   options?: { randomStartOnce?: boolean; enabled?: boolean },
 ) {
   const startedRef = useRef(false);
+  const activeRef = useRef(active);
   const enabled = options?.enabled ?? true;
   const randomStartOnce = options?.randomStartOnce ?? true;
+
+  activeRef.current = active;
 
   useLayoutEffect(() => {
     if (!enabled) return;
@@ -39,7 +43,9 @@ export function useSmartVideo(
         return;
       }
 
-      if (active) {
+      const shouldPlay = activeRef.current && document.visibilityState === "visible";
+
+      if (shouldPlay) {
         const doRandom = randomStartOnce && !startedRef.current;
         if (doRandom) startedRef.current = true;
         requestPlay(video, { randomStart: doRandom });
@@ -50,9 +56,13 @@ export function useSmartVideo(
 
     sync();
 
+    const onVisibility = () => sync();
+    document.addEventListener("visibilitychange", onVisibility);
+
     return () => {
       cancelled = true;
       cancelAnimationFrame(frame);
+      document.removeEventListener("visibilitychange", onVisibility);
       if (attached) requestPause(attached);
     };
   }, [active, enabled, randomStartOnce, videoRef]);

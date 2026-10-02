@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ArrowRight, ArrowDown } from "lucide-react";
+import ScrollReveal from "@/components/ScrollReveal";
 
 const MONO_FONT = { fontFamily: "var(--font-geist-mono, ui-monospace, monospace)" };
 
@@ -12,11 +13,6 @@ type Article = {
   href: string;
 };
 
-// Same shape as the `articles` array in Hero.tsx. If both sections are going
-// to keep showing article previews, it's worth pulling this out into a
-// shared `@/data/articles.ts` (like you already do for `@/data/projects`) so
-// the two components can't drift out of sync — happy to do that split if
-// useful. For now it's self-contained here.
 const articles: Article[] = [
   {
     id: "kafka-golang",
@@ -75,17 +71,18 @@ export default function Articles() {
       className="page-shell section-pad relative text-white"
       style={MONO_FONT}
     >
-      {/* heading */}
-      <h2 className="text-right text-6xl font-bold leading-none tracking-tight sm:text-7xl lg:text-8xl">
-        Articles
-      </h2>
+      <ScrollReveal>
+        <h2 className="text-right text-6xl font-bold leading-none tracking-tight sm:text-7xl lg:text-8xl">
+          Articles
+        </h2>
+      </ScrollReveal>
 
-      <div className="mt-8 border-t border-white/15 sm:mt-10" />
+      <ScrollReveal delay={80}>
+        <div className="mt-8 border-t border-white/15 sm:mt-10" />
+      </ScrollReveal>
 
-      {/* body: pagination rail + card grid */}
       <div className="mt-8 grid grid-cols-[auto_1fr] gap-6 sm:mt-10 sm:gap-10">
-        {/* pagination rail */}
-        <div className="flex flex-col items-center gap-3 pt-1">
+        <ScrollReveal delay={100} className="flex flex-col items-center gap-3 pt-1">
           {pages.map((_, i) => (
             <button
               key={i}
@@ -113,12 +110,13 @@ export default function Articles() {
               <ArrowDown className="h-4 w-4" />
             </button>
           )}
-        </div>
+        </ScrollReveal>
 
-        {/* card grid */}
         <div className="grid gap-5 sm:grid-cols-2 sm:gap-6">
-          {current.map((article) => (
-            <ArticleCard key={article.id} article={article} />
+          {current.map((article, i) => (
+            <ScrollReveal key={article.id} delay={120 + i * 70}>
+              <ArticleCard article={article} />
+            </ScrollReveal>
           ))}
         </div>
       </div>

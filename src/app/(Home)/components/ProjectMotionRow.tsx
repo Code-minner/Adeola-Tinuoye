@@ -41,15 +41,19 @@ function VideoStage({ project, reverse }: { project: Project; reverse: boolean }
         <div className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(135deg,rgba(255,255,255,0.1),transparent_30%,transparent_70%,rgba(186,230,253,0.07))]" />
 
         <div className="relative aspect-[16/11] overflow-hidden sm:aspect-[16/10]">
-          <video
-            ref={videoRef}
-            className="h-full w-full object-cover"
-            src={project.video}
-            muted
-            loop
-            playsInline
-            preload="metadata"
-          />
+          {visible ? (
+            <video
+              ref={videoRef}
+              className="h-full w-full object-cover"
+              src={project.video}
+              muted
+              loop
+              playsInline
+              preload="none"
+            />
+          ) : (
+            <div className="h-full w-full bg-[#141412]" aria-hidden />
+          )}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-black/55 via-transparent to-black/20" />
 
           <span aria-hidden className="absolute left-4 top-4 h-5 w-5 border-l-2 border-t-2 border-white/50" />

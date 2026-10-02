@@ -1,14 +1,11 @@
 "use client";
 
 import { Mail, Send } from "lucide-react";
+import ScrollReveal from "@/components/ScrollReveal";
 
 const MONO_FONT = { fontFamily: "var(--font-geist-mono, ui-monospace, monospace)" };
 const SANS_FONT = { fontFamily: "var(--font-geist-sans, ui-sans-serif, system-ui, sans-serif)" };
 
-// Same brand-icon replacements used in Hero.tsx (lucide-react v1 dropped the
-// trademarked ones). Duplicated here rather than imported since Hero doesn't
-// export them — worth moving to a shared `icons.tsx` if you end up needing
-// them in a third place.
 function Github(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -69,17 +66,13 @@ export default function Footer() {
       className="page-shell section-pad relative overflow-hidden rounded-b-[32px] bg-[#0c0c0b] text-white sm:rounded-b-[48px]"
       style={MONO_FONT}
     >
-      {/* decorative ring, bleeding off the top-left edge */}
       <div
         aria-hidden
         className="pointer-events-none absolute -left-40 -top-40 h-[480px] w-[480px] rounded-full border border-white/10 sm:-left-32 sm:-top-32"
       />
 
       <div className="relative flex flex-col gap-14 lg:flex-row lg:items-start lg:justify-between lg:gap-16">
-        {/* name + subtitle + socials — order-2 on mobile so the contacts
-            block (below) can appear above it, order-1 on desktop where it's
-            the left column */}
-        <div className="order-2 flex flex-col gap-10 lg:order-1">
+        <ScrollReveal from="left" className="order-2 flex flex-col gap-10 lg:order-1">
           <div>
             <h2 className="text-6xl font-bold leading-none tracking-tight sm:text-7xl lg:text-8xl">
               Opeyemi
@@ -105,11 +98,13 @@ export default function Footer() {
               </li>
             ))}
           </ul>
-        </div>
+        </ScrollReveal>
 
-        {/* contacts eyebrow + nav + site card — order-1 on mobile (shows
-            first), order-2 on desktop (right column) */}
-        <div className="order-1 flex w-full flex-col gap-8 lg:order-2 lg:w-[320px] lg:shrink-0">
+        <ScrollReveal
+          from="right"
+          delay={100}
+          className="order-1 flex w-full flex-col gap-8 lg:order-2 lg:w-[320px] lg:shrink-0"
+        >
           <div>
             <p className="text-sm font-semibold text-white sm:text-base">... /Contacts ...</p>
             <ul className="mt-5 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/70">
@@ -133,17 +128,14 @@ export default function Footer() {
             </p>
             <p className="text-sm leading-relaxed text-white/70">
               Designed by{" "}
-              <a
-                href="#"
-                className="text-white underline underline-offset-2 hover:text-white/80"
-              >
+              <a href="#" className="text-white underline underline-offset-2 hover:text-white/80">
                 Taisia
               </a>{" "}
               /
             </p>
             <p className="text-sm leading-relaxed text-white/70">Powered by NextJs</p>
           </div>
-        </div>
+        </ScrollReveal>
       </div>
     </section>
   );
